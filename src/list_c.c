@@ -74,3 +74,100 @@ int list_append(list_t *list, const void *item)
 	return 0;
 }
 
+int list_prepend(list_t *list, const void *item)
+{
+	assert(list != NULL);
+	assert(item != NULL);
+
+	if(!list || !item) return -1;
+
+	node_t* new_ptr = (node_t*)malloc(sizeof(node_t));
+	new_ptr->item = malloc( list->item_size);
+	memcpy(new_ptr->item, item, list->item_size);
+	new_ptr->next = NULL;
+
+	// создаем список с нуля
+	if(list->head == NULL)
+	{
+		list->head = new_ptr;
+	    list->tail = new_ptr;
+	}
+	else
+	{
+		node_t *tmp = list->head;
+		list->head = new_ptr;
+		list->head->next = tmp;
+	}
+
+	list->size += 1;
+	return 0;
+}
+
+int list_insert(list_t *list, const void *item, const size_t pos)
+{
+	// some stuff to prevent monkey coders from monkey code
+	assert(list != NULL);
+	assert(item != NULL);
+	assert(list->size >= pos);
+
+	if(!list || !item) return -1;
+	if(pos > list->size) return -1;
+
+	size_t count = 0;
+	node_t *cur = list->head;
+	node_t *prev = NULL;
+
+	while(cur != NULL)
+	{
+		if(count == pos)
+		{
+			if(cur == list->head)
+			{
+				list_prepend(list, item);
+				return 0;
+			}
+			else
+			{
+				node_t* new_ptr = (node_t*)malloc(sizeof(node_t));
+				new_ptr->item = malloc( list->item_size);
+				memcpy(new_ptr->item, item, list->item_size);
+				prev->next = new_ptr;
+				new_ptr->next = cur;
+				list->size += 1;
+				return 0;
+			}
+		}
+		count++;
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if(pos == list->size)
+	{
+		list_append(list, item);
+		return 0;
+	}
+	return -1;
+}
+
+void* list_front(list_t *list)
+{
+	// some stuff to prevent monkey coders from monkey code
+	assert(list != NULL);
+	assert(list->size > 0);
+
+	if(list == NULL || list->size == 0) 
+		return NULL;
+	return list->head;
+}
+
+void* list_back(list_t *list)
+{
+	// some stuff to prevent monkey coders from monkey code
+	assert(list != NULL);
+	assert(list->size > 0);
+
+	if(list == NULL || list->size == 0) 
+		return NULL;	
+	return list->tail;
+}

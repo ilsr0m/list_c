@@ -67,4 +67,34 @@ void list_delete(list_t *list);
  */
 int list_append(list_t *list, const void *item);
 
+/**
+ * @brief Функция добавления нового элемента в начало односвязного линейного списка
+ * @param[out] list Указатель на список
+ * @param[in] item Указатель на элемент списка
+ * @return Статус
+ */
+int list_prepend(list_t *list, const void *item);
+
+/**
+ * @brief Функция вставляет элемент списка в указанную позицию
+ * @param[out] list Указатель на список
+ * @param[in] list Номер нового элемента в списке
+ * @return Статус
+ */
+int list_insert(list_t *list, const void *item, const size_t pos);
+
+/**
+ * @brief Функция возвращает первый элемент списка
+ * @param[out] list Указатель на список
+ * @return Указатель на первый элемент списка
+ */
+void* list_front(list_t *list);
+
+/**
+ * @brief Функция возвращает последний элемент списка
+ * @param[out] list Указатель на список
+ * @return Указатель на последний элемент списка
+ */
+void* list_back(list_t *list);
+
 #endif
