@@ -57,7 +57,7 @@ void list_clear(list_t *list);
  * @brief Функция удаления всего односвязного линейного списка
  * @param[out] list Указатель на список
  */
-void list_delete(list_t *list);
+void list_delete(list_t **list);
 
 /**
  * @brief Функция добавления нового элемента в конец односвязного линейного списка

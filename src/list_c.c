@@ -35,23 +35,22 @@ void list_clear(list_t *list)
 	list->size = 0;
 }
 
-void list_delete(list_t *list)
+void list_delete(list_t **list)
 {
-	assert(list != NULL);
-	// прописать очистку итемов
-	node_t *cur = list->head;
+	assert((*list) != NULL);
+
+	// clean items
+	node_t *cur = (*list)->head;
 	while(cur != NULL){
 		node_t* next = cur->next;
 		free(cur->item);
 		free(cur);
 		cur = next;
 	}
-	list->head = NULL;
-	list->tail = NULL;
-	list->item_size = 0;
-	list->size = 0;
-	free(list);
-	list = NULL;
+	
+	// delete list
+	free(*list);
+	(*list) = NULL;
 }
 
 int list_append(list_t *list, const void *item)
@@ -61,7 +60,7 @@ int list_append(list_t *list, const void *item)
 	if(!list || !item) return -1;
 	// new node pointer
 	node_t* new_ptr = (node_t*)malloc(sizeof(node_t));
-	new_ptr->item = malloc( list->item_size);
+	new_ptr->item = malloc(list->item_size);
 	memcpy(new_ptr->item, item, list->item_size);
 	new_ptr->next = NULL;
 
