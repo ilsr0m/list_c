@@ -199,6 +199,46 @@ TEST(ListTest, InsertTest){
     EXPECT_EQ(list, nullptr);
 }
 
+TEST(ListTest, FrontTest){
+    list_t *list;
+    void* result;
+
+    list = list_create(sizeof(int));
+    int v1 = 3, v2 = 0;
+
+    list_prepend(list, &v1);
+    result = list_front(list);
+    EXPECT_EQ(*(int*)result, v1);
+
+    list_prepend(list, &v2);
+    result = list_front(list);
+    EXPECT_EQ(*(int*)result, v2);
+
+    list_delete(&list);
+    EXPECT_EQ(list, nullptr);
+}
+
+TEST(ListTest, BackTest){
+    list_t *list;
+    void* result;
+
+    list = list_create(sizeof(int));
+    int v1 = 3, v2 = 0;
+
+    list_append(list, &v1);
+    result = list_back(list);
+    EXPECT_EQ(*(int*)result, v1);
+
+    list_append(list, &v2);
+    result = list_back(list);
+    EXPECT_EQ(*(int*)result, v2);
+
+    list_delete(&list);
+    EXPECT_EQ(list, nullptr);
+}
+
+
+
 int main(int argc, char **argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
