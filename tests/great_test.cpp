@@ -2,239 +2,213 @@
 
 extern "C"{
     #include "list_c.h"
-
-    //test struct
-    typedef struct TestPoint{
-        double x;
-        double y;
-    }test_point_t;
 }
 
-// test values
-int test_integers[10] = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1};
-double test_doubles[10] = {-0.6, 1.7, 15.02, 2.3, 6.33, -19.29, 0.5, 5.11, 3.93, 24.0};
-test_point_t test_points[10] = {
-    { 3.1, -6.22 },
-    { 0.0, 9.7 },
-    { 1.2, -0.2 },
-    { 7.3, -6.22 },
-    { -6.1, -9.09 },
-    { 9.1, 15.15 },
-    { 1.11, -6.22 },
-    { 3.87, 88.14 },
-    { 4.44, -14.87 },
-    { 2.28, 27.88 }
+class ListTest : public testing::Test {
+protected:
+    list_t *list;
+    int testValues[10] = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1};
+
+    void SetUp() { 
+        list = list_create(sizeof(int)); 
+        IsEmpty();
+    }
+
+    void TearDown() { 
+        list_delete(&list);
+        EXPECT_EQ(list, nullptr);
+    }
+
+    void IsEmpty() {
+        EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
+        EXPECT_EQ(list->list_size, 0); // no any items
+        EXPECT_EQ(list->head, nullptr); // obviously null
+        EXPECT_EQ(list->tail, nullptr); // obviously null
+        EXPECT_EQ(list->item_size, sizeof(int));
+    }
+
+    void IsNotEmpty() {
+        EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
+        EXPECT_NE(list->head, nullptr); 
+        EXPECT_NE(list->tail, nullptr); 
+        EXPECT_GT(list->list_size, 0); 
+        EXPECT_EQ(list->item_size, sizeof(int));
+    }
+
+    void Clear() {
+        list_clear(list);
+        IsEmpty();
+    }
+
+    void FillList(int (*add)(list_t* list, const void* data)){
+        int result;
+        for(int i = 0; i < 10; i++){
+            result = add(list, &testValues[i]);
+            EXPECT_EQ(result, 0);
+        }
+        IsNotEmpty();
+        EXPECT_EQ(list->list_size, 10); 
+    }
+
+    // this comparator is needed as arg in list_remove and list_remove_all
+    static int RemoveCmp(const void* _item, const void* _key) {
+        return (*(int*)_item == *(int*)_key) ? 0 : -1;
+    }
 };
 
-// this comparator is needed as arg in list_remove and list_remove_all
-int remove_cmp(const void* _item, const void* _key){
-    return (*(int*)_item == *(int*)_key) ? 0 : -1;
-}
-
-// check when list is not null and empty
-void list_is_empty(list_t *list){
-    EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
-    EXPECT_EQ(list->size, 0); // no any items
-    EXPECT_EQ(list->head, nullptr); // obviously null
-    EXPECT_EQ(list->tail, nullptr); // obviously null
-}
-
-void list_isnt_empty(list_t *list){
-    EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
-    EXPECT_NE(list->head, nullptr); 
-    EXPECT_NE(list->tail, nullptr); 
-    EXPECT_GT(list->size, 0); 
-}
-
-TEST(ListTest, CreateTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int)); // regards to the argument in list_create
-
-    // simple check of function list_delete
-    list_delete(&list);
+// function: list_create
+TEST_F(ListTest, CreateTest) {
+    // First of all, check it with null item size
+    list = list_create(0);
     EXPECT_EQ(list, nullptr);
+
+    // Check it with fine item size
+    list = list_create(sizeof(int));
+    IsEmpty();
 }
 
-TEST(ListTest, AppendOnceTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-    int result;
+// function: list_append -> once
+TEST_F(ListTest, AppendOnceTest) {
+    int result; // return value of funtion 
     int value = 5;
+
+    // First of all, check if item is null
+    result = list_append(list, nullptr);
+    EXPECT_EQ(result, -1);
+    IsEmpty();
+
+    // Check with real value
     result = list_append(list, &value);
     EXPECT_EQ(result, 0);
+    IsNotEmpty();
 
-    list_isnt_empty(list);
-
-    EXPECT_EQ(list->size, 1); // plus one item
+    EXPECT_EQ(list->list_size, 1);     // plus one item
     EXPECT_EQ(list->tail, list->head); // head and tail must be equal
+    EXPECT_EQ(*(int*)list->head->item, value); // item is equal to value
 
-    int item = *(int*)list->tail->item;
-    EXPECT_EQ(item, value); // item is equal to value
-    EXPECT_EQ(list->item_size, sizeof(int));
-
-    // simple check of function list_delete
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, PrependOnceTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-    int result;
+// function: list_prepend -> once
+TEST_F(ListTest, PrependOnceTest) {
+    int result; // return value of funtion 
     int value = 5;
+
+    // First of all, check if item is null
+    result = list_prepend(list, nullptr);
+    EXPECT_EQ(result, -1);
+    IsEmpty();
+
+    // Check with real value
     result = list_prepend(list, &value);
     EXPECT_EQ(result, 0);
+    IsNotEmpty();
 
-    list_isnt_empty(list);
-
-    EXPECT_EQ(list->size, 1); // plus one item
+    EXPECT_EQ(list->list_size, 1); // plus one item
     EXPECT_EQ(list->tail, list->head); // head and tail must be equal
+    EXPECT_EQ(*(int*)list->head->item, value); // item is equal to value
 
-    int item = *(int*)list->tail->item;
-    EXPECT_EQ(item, value); // item is equal to value
-    EXPECT_EQ(list->item_size, sizeof(int));
-
-    // simple check of function list_delete
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, AppendSeveralTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-
-    int result;
+// function: list_append -> multiple times
+TEST_F(ListTest, AppendMultipleTest) {
+    int result; // return value of funtion 
     // fill list with some values
-    for(int i = 0; i < 10; i++){
-        result = list_append(list, &test_integers[i]);
-        EXPECT_EQ(result, 0);
-    }
-    list_isnt_empty(list);
-    EXPECT_EQ(list->size, 10); 
+    FillList(list_append);
     
     // check each value in list
     node_t *list_iter = list->head;
     int value_index = 0;
     while(list_iter != nullptr){
-        EXPECT_EQ(*(int*)list_iter->item, test_integers[value_index]);
+        EXPECT_EQ(*(int*)list_iter->item, testValues[value_index]);
         value_index++;
         list_iter = list_iter->next;
     }
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    // check if item is null
+    result = list_append(list, nullptr);
+    EXPECT_EQ(result, -1);
+    IsNotEmpty();
+    EXPECT_EQ(list->list_size, 10); 
+
+    Clear();
 }
 
-TEST(ListTest, PrependSeveralTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-
-    int result;
+// function: list_prepend -> multiple times
+TEST_F(ListTest, PrependMultipleTest){
+    int result; // return value of funtion 
+    
     // fill list with some values
-    for(int i = 0; i < 10; i++){
-        result = list_prepend(list, &test_integers[i]);
-        EXPECT_EQ(result, 0);
-    }
-    list_isnt_empty(list);
-    EXPECT_EQ(list->size, 10); 
+    FillList(list_prepend);
     
     // check each value in list
     node_t *list_iter = list->head;
     int value_index = 10;
     while(list_iter != nullptr){
         value_index--;
-        EXPECT_EQ(*(int*)list_iter->item, test_integers[value_index]);
+        EXPECT_EQ(*(int*)list_iter->item, testValues[value_index]);
         list_iter = list_iter->next;
     }
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    // check if item is null
+    result = list_prepend(list, nullptr);
+    EXPECT_EQ(result, -1);
+    IsNotEmpty();
+    EXPECT_EQ(list->list_size, 10); 
+
+    Clear();
 }
 
-TEST(ListTest, ClearTest){
-    list_t *list = list_create(sizeof(double));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(double));
-    
+// function: list_insert
+TEST_F(ListTest, InsertTest){
+    int result = 0; // return value of funtion 
     // fill list with values to make it not empty
-    for(int i = 0; i < 10; i++)
-        list_append(list, &test_doubles[i]);
-    // then clear it to check if this function works properly
-    list_clear(list);
-    EXPECT_NE(list, nullptr);
-    EXPECT_EQ(list->head, nullptr); 
-    EXPECT_EQ(list->tail, nullptr);
-    EXPECT_EQ(list->size, 0); 
-    EXPECT_EQ(list->item_size, sizeof(double)); 
+    FillList(list_append);
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
-}
-
-TEST(ListTest, InsertTest){
-    list_t *list = list_create(sizeof(test_point_t));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(test_point_t));
-
-    int result = 0;
-    // fill list with values to make it not empty
-    for(int i = 0; i < 10; i++)
-        list_append(list, &test_points[i]);
-
-    printf("a1\n");
-    // put it as first item
-    test_point_t p0 = {2.0, 2.0};
-    result = list_insert(list, &p0, 0);
-    list_isnt_empty(list);
-    EXPECT_EQ((*(test_point_t*)list->head->item).x, p0.x); 
-    EXPECT_EQ((*(test_point_t*)list->head->item).y, p0.y); 
+    // insert as head item
+    int v0 = 1;
+    result = list_insert(list, &v0, 0);
     EXPECT_EQ(result, 0); 
-    EXPECT_EQ(list->size, 11);
+    IsNotEmpty();
+    EXPECT_EQ(*(int*)list->head->item, v0); 
+    EXPECT_EQ(list->list_size, 11);
     
-    // put it as last item
-    test_point_t p1 = {4.0, 4.0};
-    result = list_insert(list, &p1, list->size);
-    list_isnt_empty(list);
-    EXPECT_EQ((*(test_point_t*)list->tail->item).x, p1.x); 
-    EXPECT_EQ((*(test_point_t*)list->tail->item).y, p1.y); 
+    // insert as last item
+    int v1 = 1;
+    result = list_insert(list, &v1, list->list_size);
     EXPECT_EQ(result, 0); 
-    EXPECT_EQ(list->size, 12);
+    IsNotEmpty();
+    EXPECT_EQ(*(int*)list->tail->item, v1);
+    EXPECT_EQ(list->list_size, 12);
 
     // put it in the middle
-    test_point_t p3 = {5.55, 5.55};
+    int v3 = 8;
     int position = 7;
-    result = list_insert(list, &p3, position);
+    result = list_insert(list, &v3, position);
+    EXPECT_EQ(result, 0); 
+    IsNotEmpty();
+    EXPECT_EQ(list->list_size, 13);
+
     node_t *list_iter = list->head;
     int count = 0;
-    while (list_iter != nullptr)
-    {
-        if(position == count) 
-            break;
+    while (list_iter != nullptr) {
+        if(position == count) break;
         count++;
         list_iter = list_iter->next;
     }
-    list_isnt_empty(list);
-    EXPECT_EQ((*(test_point_t*)list_iter->item).x, p3.x); 
-    EXPECT_EQ((*(test_point_t*)list_iter->item).y, p3.y);  
-    EXPECT_EQ(result, 0); 
-    EXPECT_EQ(list->size, 13);
-
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    EXPECT_EQ(*(int*)list_iter->item, v3);
+    
+    Clear();
 }
 
-TEST(ListTest, FrontTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-    
-    void* result;
+// function: list_front
+TEST_F(ListTest, FrontTest) {
+    void* result; // return value of funtion 
     int v1 = 3, v2 = 0;
+
+    result = list_front(list);
+    EXPECT_EQ(result, nullptr);
 
     list_prepend(list, &v1);
     result = list_front(list);
@@ -243,18 +217,17 @@ TEST(ListTest, FrontTest){
     list_prepend(list, &v2);
     result = list_front(list);
     EXPECT_EQ(*(int*)result, v2);
-
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    
+    Clear();
 }
 
-TEST(ListTest, BackTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-
-    void* result;
+// function: list_back
+TEST_F(ListTest, BackTest){
+    void* result; // return value of funtion 
     int v1 = 3, v2 = 0;
+
+    result = list_back(list);
+    EXPECT_EQ(result, nullptr);
 
     list_append(list, &v1);
     result = list_back(list);
@@ -264,15 +237,11 @@ TEST(ListTest, BackTest){
     result = list_back(list);
     EXPECT_EQ(*(int*)result, v2);
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, RemoveOnceTest){
-    list_t* list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-
+// function: list_remove
+TEST_F(ListTest, RemoveOnceTest){
     // Test bundle
     void* removed_item;
     int test_ints_count;
@@ -285,21 +254,18 @@ TEST(ListTest, RemoveOnceTest){
     // Test 0 - only one item in list
     int once = 4;
     list_append(list, &once);
-    removed_item = list_remove(list, &once, remove_cmp);
+    removed_item = list_remove(list, &once, ListTest::RemoveCmp);
     EXPECT_EQ(*(int*)removed_item, once);
-    list_is_empty(list);
+    IsEmpty();
 
-
-    // fill list with some values
-    for(int i = 0; i < 10; i++)
-        list_append(list, &test_integers[i]);
+    FillList(list_append);
     
     // Test 1 - Remove head item
     int head_key = 9; // remove 9 value
-    removed_item = list_remove(list, &head_key, remove_cmp);
+    removed_item = list_remove(list, &head_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(*(int*)removed_item, head_key);
-    EXPECT_EQ(list->size, 9);
+    EXPECT_EQ(list->list_size, 9);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -311,10 +277,10 @@ TEST(ListTest, RemoveOnceTest){
 
     // Test 2 - Remove tail item
     int tail_key = 1; // remove 1 value
-    removed_item = list_remove(list, &tail_key, remove_cmp);
+    removed_item = list_remove(list, &tail_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(*(int*)removed_item, tail_key);
-    EXPECT_EQ(list->size, 8);
+    EXPECT_EQ(list->list_size, 8);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -326,10 +292,10 @@ TEST(ListTest, RemoveOnceTest){
 
     // Test 3 - Remove middle item
     int middle_key = 0; // remove 0 value
-    removed_item = list_remove(list, &middle_key, remove_cmp);
+    removed_item = list_remove(list, &middle_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(*(int*)removed_item, middle_key);
-    EXPECT_EQ(list->size, 7);
+    EXPECT_EQ(list->list_size, 7);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -341,10 +307,10 @@ TEST(ListTest, RemoveOnceTest){
 
     // Test 4 - Remove value 5 (it must remove only first item with such value)
     int duplicate_key = 5;
-    removed_item = list_remove(list, &duplicate_key, remove_cmp);
+    removed_item = list_remove(list, &duplicate_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(*(int*)removed_item, duplicate_key);
-    EXPECT_EQ(list->size, 6);
+    EXPECT_EQ(list->list_size, 6);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -356,10 +322,10 @@ TEST(ListTest, RemoveOnceTest){
 
     // Test 5 - Try to remove value which the list does not have
     int fake_key = 228;
-    removed_item = list_remove(list, &fake_key, remove_cmp);
+    removed_item = list_remove(list, &fake_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_item, nullptr);
-    EXPECT_EQ(list->size, 6);
+    EXPECT_EQ(list->list_size, 6);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -369,15 +335,11 @@ TEST(ListTest, RemoveOnceTest){
         test_ints_count++;
     }
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, RemoveAllTest){
-    list_t* list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int));
-
+// function: list_remove_all
+TEST_F(ListTest, RemoveAllTest){
     // Test bundle
     int removed_items_count; // for return type
     int test_ints_count;
@@ -390,20 +352,19 @@ TEST(ListTest, RemoveAllTest){
     // Test 0 - only one item in list
     int once = 4;
     list_append(list, &once);
-    removed_items_count = list_remove_all(list, &once, remove_cmp);
+    removed_items_count = list_remove_all(list, &once, ListTest::RemoveCmp);
     EXPECT_EQ(removed_items_count, 1);
-    list_is_empty(list);
+    IsEmpty();
 
     // fill list with some values
-    for(int i = 0; i < 10; i++)
-        list_append(list, &test_integers[i]);
+    FillList(list_append);
     
     // Test 1 - Remove head item
     int head_key = 9; // remove 9 value
-    removed_items_count = list_remove_all(list, &head_key, remove_cmp);
+    removed_items_count = list_remove_all(list, &head_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_items_count, 1);
-    EXPECT_EQ(list->size, 9);
+    EXPECT_EQ(list->list_size, 9);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -415,10 +376,10 @@ TEST(ListTest, RemoveAllTest){
 
     // Test 2 - Remove tail item
     int tail_key = 1; // remove 1 value
-    removed_items_count = list_remove_all(list, &tail_key, remove_cmp);
+    removed_items_count = list_remove_all(list, &tail_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_items_count, 1);
-    EXPECT_EQ(list->size, 8);
+    EXPECT_EQ(list->list_size, 8);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -430,10 +391,10 @@ TEST(ListTest, RemoveAllTest){
 
     // Test 3 - Remove middle item
     int middle_key = 0; // remove 0 value
-    removed_items_count = list_remove_all(list, &middle_key, remove_cmp);
+    removed_items_count = list_remove_all(list, &middle_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_items_count, 1);
-    EXPECT_EQ(list->size, 7);
+    EXPECT_EQ(list->list_size, 7);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -453,10 +414,10 @@ TEST(ListTest, RemoveAllTest){
     list_prepend(list, &duplicate_key);
     list_insert(list, &duplicate_key, 4);
     // start removing all fives
-    removed_items_count = list_remove_all(list, &duplicate_key, remove_cmp);
+    removed_items_count = list_remove_all(list, &duplicate_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_items_count, 8);
-    EXPECT_EQ(list->size, 5);
+    EXPECT_EQ(list->list_size, 5);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -468,10 +429,10 @@ TEST(ListTest, RemoveAllTest){
 
     // Test 5 - Try to remove value which the list does not have
     int fake_key = 228;
-    removed_items_count = list_remove_all(list, &fake_key, remove_cmp);
+    removed_items_count = list_remove_all(list, &fake_key, ListTest::RemoveCmp);
     EXPECT_NE(list, nullptr);
     EXPECT_EQ(removed_items_count, 0);
-    EXPECT_EQ(list->size, 5);
+    EXPECT_EQ(list->list_size, 5);
     // check each item value
     test_iter = list->head;
     test_ints_count = 0;
@@ -481,73 +442,58 @@ TEST(ListTest, RemoveAllTest){
         test_ints_count++;
     }
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, PopFrontTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int)); // regards to the argument in list_create
-
-    int result;
-    // Remove when it has only one item
+// function: list_pop_front
+TEST_F(ListTest, PopFrontTest){
     int val = 22;
-    result = list_append(list, &val);
-    list_isnt_empty(list);
-    EXPECT_EQ(result, 0);
+    void* item;
 
-    void* item = list_pop_front(list);
-    list_is_empty(list);
+    //empty
+    item = list_pop_front(list);
+    EXPECT_EQ(item, nullptr);
+
+    // Remove when it has only one item
+    list_prepend(list, &val);
+    item = list_pop_front(list);
+    IsEmpty();
     EXPECT_EQ(*(int*)item, val);
 
     // Remove when several items
-    for(int i = 0; i < 5; i++){
-        result = list_append(list, &val);
-        EXPECT_EQ(result, 0);
-        list_isnt_empty(list);
-    }
-    EXPECT_EQ(list->size, 5);
-    
+    FillList(list_append);
     item = list_pop_front(list);
-    EXPECT_EQ(*(int*)item, val);
-    list_isnt_empty(list);
-    EXPECT_EQ(list->size, 4);
+    EXPECT_EQ(*(int*)item, 9);
+    IsNotEmpty();
+    EXPECT_EQ(list->list_size, 9);
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
-TEST(ListTest, PopBackTest){
-    list_t *list = list_create(sizeof(int));
-    list_is_empty(list);
-    EXPECT_EQ(list->item_size, sizeof(int)); // regards to the argument in list_create
-    
-    int result;
-    // Pop when it has only one item    
+// function: list_pop_back
+TEST_F(ListTest, PopBackTest) {
     int val = 22;
-    result = list_append(list, &val);
-    list_isnt_empty(list);
-    EXPECT_EQ(result, 0);
-    void* item = list_pop_back(list);
-    list_is_empty(list);
+    void* item;
+
+    // empty
+    item = list_pop_front(list);
+    EXPECT_EQ(item, nullptr);
+
+    // Pop when it has only one item    
+    list_append(list, &val);
+    item = list_pop_back(list);
+    IsEmpty();
     EXPECT_EQ(*(int*)item, val);
 
     // Pop when several items
-    for(int i = 0; i < 5; i++){
-        result = list_append(list, &val);
-        EXPECT_EQ(result, 0);
-        list_isnt_empty(list);
-    }
-    EXPECT_EQ(list->size, 5);
+    FillList(list_append);
 
     item = list_pop_back(list);
-    EXPECT_EQ(*(int*)item, val);
-    list_isnt_empty(list);
-    EXPECT_EQ(list->size, 4);
+    EXPECT_EQ(*(int*)item, 1);
+    IsNotEmpty();
+    EXPECT_EQ(list->list_size, 9);
 
-    list_delete(&list);
-    EXPECT_EQ(list, nullptr);
+    Clear();
 }
 
 int main(int argc, char **argv){
