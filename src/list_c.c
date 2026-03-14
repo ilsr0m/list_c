@@ -191,19 +191,21 @@ void* list_remove(list_t *list, void* key, cmp_func_t cmp_func)
 
 	while(ptr != NULL){
 		next = ptr->next;
-		// находим соответствие по компаратору
+		// check by comaprator
 		if(cmp_func(ptr->item, key) == 0)
 		{
-			if(ptr == list->head) // remove first
-				list->head = next;
+			if(ptr == list->head){ // remove first
+				if(list->tail == list->head) // if only one item in list
+					list->head = list->tail = NULL;	
+				else list->head = next;
+			}
 			else if(ptr == list->tail) // remove last
 			{
 				list->tail = prev;
 				prev->next = NULL;
 			}
-			else // remove in the middle
-				prev->next = next;
-
+			else prev->next = next; // remove in the middle
+			
 			void* item = malloc(list->item_size);
 			memcpy(item, ptr->item, list->item_size);
 
@@ -237,21 +239,21 @@ int list_remove_all(list_t *list, void* key, cmp_func_t cmp_func)
 	while(ptr != NULL)
 	{
 		next = ptr->next;
-		// находим соответствие по предикату
+		// check by comaprator
 		if(cmp_func(ptr->item, key) == 0)
 		{
 			if(ptr == list->head){ // remove first
-				list->head = next;
+				if(list->head == list->tail) // if only one item in list
+					list->head = list->tail = NULL;
+				else list->head = next;
 			}
 			else if(ptr == list->tail) // remove last
 			{
 				list->tail = prev;
 				prev->next = NULL;
 			}
-			else{ // remove in the middle
-				prev->next = next;
-			}
-
+			else prev->next = next; // remove in the middle
+			
 			free(ptr->item);
 			free(ptr);
 			list->size -= 1;
