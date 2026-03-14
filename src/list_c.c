@@ -58,7 +58,9 @@ int list_append(list_t *list, const void *item)
 	if(!list || !item) return -1;
 	// new node pointer
 	node_t* new_ptr = (node_t*)malloc(sizeof(node_t));
+	if(new_ptr == NULL) return -1;
 	new_ptr->item = malloc(list->item_size);
+	if(new_ptr->item == NULL) return -1;
 	memcpy(new_ptr->item, item, list->item_size);
 	new_ptr->next = NULL;
 
@@ -83,7 +85,9 @@ int list_prepend(list_t *list, const void *item)
 	if(!list || !item) return -1;
 
 	node_t* new_ptr = (node_t*)malloc(sizeof(node_t));
-	new_ptr->item = malloc( list->item_size);
+	if(new_ptr == NULL) return -1;
+	new_ptr->item = malloc(list->item_size);
+	if(new_ptr->item == NULL) return -1;
 	memcpy(new_ptr->item, item, list->item_size);
 	new_ptr->next = NULL;
 
