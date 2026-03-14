@@ -39,6 +39,13 @@ void list_is_empty(list_t *list){
     EXPECT_EQ(list->tail, nullptr); // obviously null
 }
 
+void list_isnt_empty(list_t *list){
+    EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
+    EXPECT_NE(list->head, nullptr); 
+    EXPECT_NE(list->tail, nullptr); 
+    EXPECT_GT(list->size, 0); 
+}
+
 TEST(ListTest, CreateTest){
     list_t *list = list_create(sizeof(int));
     list_is_empty(list);
@@ -53,14 +60,14 @@ TEST(ListTest, AppendOnceTest){
     list_t *list = list_create(sizeof(int));
     list_is_empty(list);
     EXPECT_EQ(list->item_size, sizeof(int));
-
+    int result;
     int value = 5;
-    list_append(list, &value);
+    result = list_append(list, &value);
+    EXPECT_EQ(result, 0);
 
-    EXPECT_NE(list, nullptr);
+    list_isnt_empty(list);
+
     EXPECT_EQ(list->size, 1); // plus one item
-    EXPECT_NE(list->head, nullptr); 
-    EXPECT_NE(list->tail, nullptr);  
     EXPECT_EQ(list->tail, list->head); // head and tail must be equal
 
     int item = *(int*)list->tail->item;
@@ -76,14 +83,14 @@ TEST(ListTest, PrependOnceTest){
     list_t *list = list_create(sizeof(int));
     list_is_empty(list);
     EXPECT_EQ(list->item_size, sizeof(int));
-
+    int result;
     int value = 5;
-    list_prepend(list, &value);
+    result = list_prepend(list, &value);
+    EXPECT_EQ(result, 0);
 
-    EXPECT_NE(list, nullptr);
+    list_isnt_empty(list);
+
     EXPECT_EQ(list->size, 1); // plus one item
-    EXPECT_NE(list->head, nullptr); 
-    EXPECT_NE(list->tail, nullptr);  
     EXPECT_EQ(list->tail, list->head); // head and tail must be equal
 
     int item = *(int*)list->tail->item;
@@ -100,13 +107,13 @@ TEST(ListTest, AppendSeveralTest){
     list_is_empty(list);
     EXPECT_EQ(list->item_size, sizeof(int));
 
+    int result;
     // fill list with some values
-    for(int i = 0; i < 10; i++)
-        list_append(list, &test_integers[i]);
-    
-    EXPECT_NE(list, nullptr);
-    EXPECT_NE(list->head, nullptr); 
-    EXPECT_NE(list->tail, nullptr);
+    for(int i = 0; i < 10; i++){
+        result = list_append(list, &test_integers[i]);
+        EXPECT_EQ(result, 0);
+    }
+    list_isnt_empty(list);
     EXPECT_EQ(list->size, 10); 
     
     // check each value in list
@@ -127,13 +134,13 @@ TEST(ListTest, PrependSeveralTest){
     list_is_empty(list);
     EXPECT_EQ(list->item_size, sizeof(int));
 
+    int result;
     // fill list with some values
-    for(int i = 0; i < 10; i++)
-        list_prepend(list, &test_integers[i]);
-    
-    EXPECT_NE(list, nullptr);
-    EXPECT_NE(list->head, nullptr); 
-    EXPECT_NE(list->tail, nullptr);
+    for(int i = 0; i < 10; i++){
+        result = list_prepend(list, &test_integers[i]);
+        EXPECT_EQ(result, 0);
+    }
+    list_isnt_empty(list);
     EXPECT_EQ(list->size, 10); 
     
     // check each value in list
@@ -183,8 +190,7 @@ TEST(ListTest, InsertTest){
     // put it as first item
     test_point_t p0 = {2.0, 2.0};
     result = list_insert(list, &p0, 0);
-    
-    EXPECT_NE(list, nullptr);
+    list_isnt_empty(list);
     EXPECT_EQ((*(test_point_t*)list->head->item).x, p0.x); 
     EXPECT_EQ((*(test_point_t*)list->head->item).y, p0.y); 
     EXPECT_EQ(result, 0); 
@@ -193,7 +199,7 @@ TEST(ListTest, InsertTest){
     // put it as last item
     test_point_t p1 = {4.0, 4.0};
     result = list_insert(list, &p1, list->size);
-    EXPECT_NE(list, nullptr);
+    list_isnt_empty(list);
     EXPECT_EQ((*(test_point_t*)list->tail->item).x, p1.x); 
     EXPECT_EQ((*(test_point_t*)list->tail->item).y, p1.y); 
     EXPECT_EQ(result, 0); 
@@ -212,8 +218,7 @@ TEST(ListTest, InsertTest){
         count++;
         list_iter = list_iter->next;
     }
-
-    EXPECT_NE(list, nullptr); 
+    list_isnt_empty(list);
     EXPECT_EQ((*(test_point_t*)list_iter->item).x, p3.x); 
     EXPECT_EQ((*(test_point_t*)list_iter->item).y, p3.y);  
     EXPECT_EQ(result, 0); 
@@ -475,6 +480,71 @@ TEST(ListTest, RemoveAllTest){
         test_iter = test_iter->next;
         test_ints_count++;
     }
+
+    list_delete(&list);
+    EXPECT_EQ(list, nullptr);
+}
+
+TEST(ListTest, PopFrontTest){
+    list_t *list = list_create(sizeof(int));
+    list_is_empty(list);
+    EXPECT_EQ(list->item_size, sizeof(int)); // regards to the argument in list_create
+
+    int result;
+    // Remove when it has only one item
+    int val = 22;
+    result = list_append(list, &val);
+    list_isnt_empty(list);
+    EXPECT_EQ(result, 0);
+
+    void* item = list_pop_front(list);
+    list_is_empty(list);
+    EXPECT_EQ(*(int*)item, val);
+
+    // Remove when several items
+    for(int i = 0; i < 5; i++){
+        result = list_append(list, &val);
+        EXPECT_EQ(result, 0);
+        list_isnt_empty(list);
+    }
+    EXPECT_EQ(list->size, 5);
+    
+    item = list_pop_front(list);
+    EXPECT_EQ(*(int*)item, val);
+    list_isnt_empty(list);
+    EXPECT_EQ(list->size, 4);
+
+    list_delete(&list);
+    EXPECT_EQ(list, nullptr);
+}
+
+TEST(ListTest, PopBackTest){
+    list_t *list = list_create(sizeof(int));
+    list_is_empty(list);
+    EXPECT_EQ(list->item_size, sizeof(int)); // regards to the argument in list_create
+    
+    int result;
+    // Pop when it has only one item    
+    int val = 22;
+    result = list_append(list, &val);
+    list_isnt_empty(list);
+    EXPECT_EQ(result, 0);
+    void* item = list_pop_back(list);
+    list_is_empty(list);
+    EXPECT_EQ(*(int*)item, val);
+
+    // Pop when several items
+    for(int i = 0; i < 5; i++){
+        result = list_append(list, &val);
+        EXPECT_EQ(result, 0);
+        list_isnt_empty(list);
+    }
+    EXPECT_EQ(list->size, 5);
+
+    item = list_pop_back(list);
+    EXPECT_EQ(*(int*)item, val);
+    list_isnt_empty(list);
+    EXPECT_EQ(list->size, 4);
 
     list_delete(&list);
     EXPECT_EQ(list, nullptr);
