@@ -237,7 +237,90 @@ TEST(ListTest, BackTest){
     EXPECT_EQ(list, nullptr);
 }
 
+// this comparator is needed as arg in list_remove and list_remove_all
+int remove_cmp(const void* _item, const void* _key){
+    if(*(int*)_item == *(int*)_key)
+        return 0;
+    return -1;
+}
 
+TEST(ListTest, RemoveOnceTest){
+    list_t* list = list_create(sizeof(int));
+
+    // fill list with some values
+    for(int i = 0; i < 10; i++)
+        list_append(list, &test_integers[i]);
+    
+    void* removed_item;
+    int test_ints_count;
+
+    // Test 1 - Remove head item
+    int head_key = 9;
+    removed_item = list_remove(list, &head_key, remove_cmp);
+    EXPECT_NE(list, nullptr);
+    EXPECT_EQ(*(int*)removed_item, head_key);
+    EXPECT_EQ(list->size, 9);
+    // check each item value
+    int test_ints_1[9] = {2, -1, 5, 7, 0, 4, 5, 3, 1};
+    node_t *test_iter_1 = list->head;
+    test_ints_count = 0;
+    while(test_iter_1 != nullptr){
+        EXPECT_EQ(*(int*)test_iter_1->item, test_ints_1[test_ints_count]);
+        test_iter_1 = test_iter_1->next;
+        test_ints_count++;
+    }
+
+    // Test 2 - Remove tail item
+    int tail_key = 1;
+    removed_item = list_remove(list, &tail_key, remove_cmp);
+    EXPECT_NE(list, nullptr);
+    EXPECT_EQ(*(int*)removed_item, tail_key);
+    EXPECT_EQ(list->size, 8);
+    // check each item value
+    int test_ints_2[8] = {2, -1, 5, 7, 0, 4, 5, 3};
+    node_t *test_iter_2 = list->head;
+    test_ints_count = 0;
+    while(test_iter_2 != nullptr){
+        EXPECT_EQ(*(int*)test_iter_2->item, test_ints_2[test_ints_count]);
+        test_iter_2 = test_iter_2->next;
+        test_ints_count++;
+    }
+
+    // Test 3 - Remove middle item
+    int middle_key = 0;
+    removed_item = list_remove(list, &middle_key, remove_cmp);
+    EXPECT_NE(list, nullptr);
+    EXPECT_EQ(*(int*)removed_item, middle_key);
+    EXPECT_EQ(list->size, 7);
+    // check each item value
+    int test_ints_3[7] = {2, -1, 5, 7, 4, 5, 3};
+    node_t *test_iter_3 = list->head;
+    test_ints_count = 0;
+    while(test_iter_3 != nullptr){
+        EXPECT_EQ(*(int*)test_iter_3->item, test_ints_3[test_ints_count]);
+        test_iter_3 = test_iter_3->next;
+        test_ints_count++;
+    }
+
+    // Test 4 - Remove value 5 (it must remove only first item with such value)
+    int duplicate_key = 5;
+    removed_item = list_remove(list, &duplicate_key, remove_cmp);
+    EXPECT_NE(list, nullptr);
+    EXPECT_EQ(*(int*)removed_item, duplicate_key);
+    EXPECT_EQ(list->size, 6);
+    // check each item value
+    int test_ints_4[6] = {2, -1, 7, 4, 5, 3};
+    node_t *test_iter_4 = list->head;
+    test_ints_count = 0;
+    while(test_iter_4 != nullptr){
+        EXPECT_EQ(*(int*)test_iter_4->item, test_ints_4[test_ints_count]);
+        test_iter_4 = test_iter_4->next;
+        test_ints_count++;
+    }
+
+    list_delete(&list);
+    EXPECT_EQ(list, nullptr);
+}
 
 int main(int argc, char **argv){
     ::testing::InitGoogleTest(&argc, argv);
