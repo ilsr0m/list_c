@@ -728,6 +728,47 @@ TEST_F(ListTest, FilterTest){
     Clear();
 }
 
+TEST_F(ListTest, TrimFrontTest){
+    int result;
+    int valid_values[7] = {5, 7, 0, 4, 5, 3, 1};
+
+    // if list is null
+    result = list_trim_front(nullptr, 2); // -1
+    EXPECT_EQ(result, -1);
+    // empty list
+    IsEmpty();
+    result = list_trim_front(list, 0); // 0
+    EXPECT_EQ(result, 0);
+    IsEmpty();
+    result = list_trim_front(list, 1); // -1
+    EXPECT_EQ(result, -1);
+
+    FillList(list_append);
+    // if n = 0
+    result = list_trim_front(list, 0); // 0
+    EXPECT_EQ(result, 0);
+    // if n gt list_size
+    result = list_trim_front(list, 15); // -1
+    EXPECT_EQ(result, -1);
+
+    // valid trim twice 
+    result = list_trim_front(list, 3); // 3
+    IsNotEmpty();
+    EXPECT_EQ(result, 3);
+    EXPECT_EQ(list->list_size, 7);
+    for(int i = 0; i < 7; i++)
+        EXPECT_EQ(*(int*)list_at(list, i), valid_values[i]);
+    
+    result = list_trim_front(list, 2); // 3
+    IsNotEmpty();
+    EXPECT_EQ(result, 2);
+    EXPECT_EQ(list->list_size, 5);
+    for(int i = 2; i < 7; i++)
+        EXPECT_EQ(*(int*)list_at(list, i - 2), valid_values[i]);
+    
+    Clear();
+}
+
 int main(int argc, char **argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
