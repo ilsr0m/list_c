@@ -336,10 +336,10 @@ list_t* list_filter(const list_t *list, void* context, predicate_fn predicate) {
 	if(list == NULL || predicate == NULL || context == NULL) return NULL;
 	if(!list->item_size) return NULL;
 
-	list_t *destination = list_create(list->item_size);
+	list_t* destination = list_create(list->item_size);
 	if(!destination) return NULL;
 	if(list->list_size) {
-		node_t *current_node = list->head;
+		node_t* current_node = list->head;
 		while(current_node) {
 			if(predicate(current_node->item, context) == 0)
 				list_append(destination, current_node->item);
@@ -347,4 +347,89 @@ list_t* list_filter(const list_t *list, void* context, predicate_fn predicate) {
 	 	}
 	}
 	return destination;
+}
+
+int list_trim_front(list_t* list, const size_t n) {
+	if(!list) return -1;
+	if(n > list->list_size) return -1;
+	if(!n) return 0;
+	int i;
+	for(i = 0; i < n; i++)
+		list_pop_front(list);
+	return i;
+}
+
+int list_trim_back(list_t* list, const size_t n) {
+	if(!list) return -1;
+	if(n > list->list_size) return -1;
+	if(!n) return 0;
+
+	int trim_start = list->list_size - n;
+	node_t* current_node = list->head;
+	node_t* previous_node; node_t *next_node;
+	int i = 0, count = 0;
+	while(current_node) {
+		next_node = current_node->next;
+		if(i >= trim_start) {
+			if(current_node == list->head) // remove first
+				list->head = next_node;
+			else if(current_node == list->tail) { // remove last
+				list->tail = previous_node;
+				previous_node->next = NULL;
+			}
+			else // remove in the middle
+				previous_node->next = next_node;
+
+			free(current_node->item);
+			free(current_node);
+			list->list_size -= 1;
+			count++;
+			current_node = next_node;
+		}
+		else {
+			previous_node = current_node;
+			current_node = current_node->next;
+		}
+		i++;
+	}
+	return count;
+}
+
+int list_trim_range(list_t *list, const size_t start, const size_t end) {
+	if(!list) return -1;
+	if(start > end || end > list->list_size) return -1;
+	if(start == end) return 0;
+
+	if(start == 0)
+		return list_trim_front(list, end);
+	if(end == list->list_size)
+		return list_trim_back(list, end - start);
+
+	int i;
+	int count = 0;
+	node_t *cur = list->head->next;
+	node_t *prev = list->head, *next = cur->next;
+	node_t *left = NULL, *right = NULL;
+
+	for(i = 1; i < end - 1; i++) {
+		if(left == NULL) {
+			if(i == start) left = prev;
+			prev = cur;
+		}
+		if(left != NULL) {
+			free(cur->item);
+			free(cur);
+			count++;
+		}
+		cur = next;
+		next = next->next;
+	}
+
+	list->list_size -= (end - start);
+	right = next;
+	// bind left and right nodes
+//	if(left != NULL && right != NULL){
+	left->next = right;
+	return count;
+//	}
 }

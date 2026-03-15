@@ -161,4 +161,29 @@ int list_contains(const list_t* list, const void* key, cmp_func_t comparator);
  */
 list_t* list_filter(const list_t* list, void* context, predicate_fn predicate);
 
+/**
+ * @brief Функция удаления n-го количества элементов с начала односвязного линейного списка
+ * @param[out] list Указатель на список
+ * @param[in] n Количество удаляемых элементов
+ * @return Количество удаленных элементов
+ */
+int list_trim_front(list_t *list, const size_t n); // +
+
+/**
+ * @brief Функция удаления n-го количества элементов с конца односвязного линейного списка
+ * @param[out] list Указатель на список
+ * @param[in] n Количество удаляемых элементов
+ * @return Количество удаленных элементов
+ */
+int list_trim_back(list_t *list, const size_t n); // +
+
+/**
+ * @brief Функция удаления n-го количества элементов в указанном диапазоне [start; end)
+ * @param[out] list Указатель на список
+ * @param[in] start Индекс начального элемента (включительно)
+ * @param[in] end Индекс конечного элемента
+ * @return Количество удаленных элементов
+ */
+int list_trim_range(list_t *list, const size_t start, const size_t end);
+
 #endif
