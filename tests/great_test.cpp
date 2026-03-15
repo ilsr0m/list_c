@@ -7,7 +7,9 @@ extern "C"{
 class ListTest : public testing::Test {
 protected:
     list_t *list;
+
     int testValues[10] = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1};
+    int testValuesSorted[10] = {-1, 0, 1, 2, 3, 4, 5, 5, 7, 9};
 
     void SetUp() { 
         list = list_create(sizeof(int)); 
@@ -27,12 +29,28 @@ protected:
         EXPECT_EQ(list->item_size, sizeof(int));
     }
 
+    static void IsEmpty(list_t *li) {
+        EXPECT_NE(li, nullptr); // list is not null, coz it's already initialized
+        EXPECT_EQ(li->list_size, 0); // no any items
+        EXPECT_EQ(li->head, nullptr); // obviously null
+        EXPECT_EQ(li->tail, nullptr); // obviously null
+        EXPECT_EQ(li->item_size, sizeof(int));
+    }
+
     void IsNotEmpty() {
         EXPECT_NE(list, nullptr); // list is not null, coz it's already initialized
         EXPECT_NE(list->head, nullptr); 
         EXPECT_NE(list->tail, nullptr); 
         EXPECT_GT(list->list_size, 0); 
         EXPECT_EQ(list->item_size, sizeof(int));
+    }
+
+    static void IsNotEmpty(list_t *li) {
+        EXPECT_NE(li, nullptr); // list is not null, coz it's already initialized
+        EXPECT_NE(li->head, nullptr); 
+        EXPECT_NE(li->tail, nullptr); 
+        EXPECT_GT(li->list_size, 0); 
+        EXPECT_EQ(li->item_size, sizeof(int));
     }
 
     void Clear() {
@@ -47,7 +65,7 @@ protected:
             EXPECT_EQ(result, 0);
         }
         IsNotEmpty();
-        EXPECT_EQ(list->list_size, 10); 
+        EXPECT_EQ(list->list_size, 10);
     }
 
     // this comparator is needed as arg in list_remove and list_remove_all
@@ -58,13 +76,9 @@ protected:
 
 // function: list_create
 TEST_F(ListTest, CreateTest) {
-    // First of all, check it with null item size
-    list = list_create(0);
-    EXPECT_EQ(list, nullptr);
-
-    // Check it with fine item size
-    list = list_create(sizeof(int));
-    IsEmpty();
+    // check it with null item size
+    list_t* create = list_create(0);
+    EXPECT_EQ(create, nullptr);
 }
 
 // function: list_append -> once
@@ -496,6 +510,7 @@ TEST_F(ListTest, PopBackTest) {
     Clear();
 }
 
+// function: list_at
 TEST_F(ListTest, AtTest) {
     void* item;
 
@@ -523,6 +538,58 @@ TEST_F(ListTest, AtTest) {
         EXPECT_EQ(item, nullptr);
         IsNotEmpty();
     }
+
+    Clear();
+}
+
+// function: list_copy
+TEST_F(ListTest, CopyTest){
+    list_t* copy;
+    
+    // test with NULL argument
+    copy = list_copy(nullptr);
+    EXPECT_EQ(copy, nullptr);
+
+    // copy of empty list
+    copy = list_copy(list);
+    ListTest::IsEmpty(copy);
+    EXPECT_NE(copy, list);
+
+    list_delete(&copy);
+    EXPECT_EQ(copy, nullptr);
+
+    // copy of one item list
+    int val = 3; 
+    list_append(list, &val);
+    copy = list_copy(list);
+
+    ListTest::IsNotEmpty(copy);
+    EXPECT_NE(copy, list);
+    EXPECT_EQ(copy->list_size, 1);
+    EXPECT_NE(copy->head, nullptr);
+    EXPECT_NE(copy->tail, nullptr);
+    EXPECT_EQ(copy->tail, copy->head);
+
+    list_delete(&copy);
+    EXPECT_EQ(copy, nullptr);
+
+    // copy of filled list - 10 items
+    Clear();
+    FillList(list_append);
+    copy = list_copy(list);
+    ListTest::IsNotEmpty();
+    EXPECT_EQ(copy->list_size, 10);
+    node_t* copy_iter = copy->head;
+    node_t* list_iter = list->head;
+    while (copy_iter && list_iter){
+        EXPECT_NE(copy_iter->item, nullptr);
+        EXPECT_EQ(*(int*)copy_iter->item, *(int*)list_iter->item);
+        copy_iter = copy_iter->next;
+        list_iter = list_iter->next;
+    }
+
+    list_delete(&copy);
+    EXPECT_EQ(copy, nullptr);
 
     Clear();
 }

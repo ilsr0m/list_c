@@ -134,4 +134,11 @@ void* list_pop_back(list_t *list);
  */
 void* list_at(const list_t *list, const size_t index);
 
+/**
+ * @brief Формирование копии списка, указатель которого передается в аргумент
+ * @param[in] first Указатель на список
+ * @return Указатель на копию списка
+ */
+list_t *list_copy(const list_t *list);
+
 #endif

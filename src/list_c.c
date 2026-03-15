@@ -306,3 +306,18 @@ void* list_at(const list_t *list, const size_t index) {
 	}
 	return NULL;
 }
+
+list_t *list_copy(const list_t *list){
+	if(!list) return NULL;
+
+	list_t *copy = list_create(list->item_size);
+	if(!copy) return NULL;
+	if(list->list_size){
+		node_t *cur = list->head;
+		while(cur){
+			list_append(copy, cur->item);
+			cur = cur->next;
+		}
+	}
+	return copy;
+}
