@@ -73,7 +73,7 @@ protected:
         EXPECT_EQ(list->list_size, 10);
     }
 
-    void TestData(std::vector<int> test_values){
+    int TestData(std::vector<int> test_values){
         node_t* current_node = list->head;
         int count = 0;
         while(current_node){
@@ -81,6 +81,7 @@ protected:
             current_node = current_node->next;
             count++;
         }
+        return count;
     }
 
     // this comparator is needed as arg in list_remove and list_remove_all
@@ -377,10 +378,7 @@ TEST_F(ListTest, RemoveAllTest){
     int removed_items_count; // for return type
     int test_ints_count;
     node_t* test_iter;
-    int test_ints_1[9] = {2, -1, 5, 7, 0, 4, 5, 3, 1};  // for Test 1
-    int test_ints_2[8] = {2, -1, 5, 7, 0, 4, 5, 3};     // for Test 2
-    int test_ints_3[7] = {2, -1, 5, 7, 4, 5, 3};        // for Test 3
-    int test_ints_4[5] = {2, -1, 7, 4, 3};              // for Test 4 and Test 5
+    std::vector<int> test_values = {2, -1, 5, 7, 0, 4, 5, 3, 1};
 
     // Test 0 - only one item in list
     int once = 4;
@@ -402,12 +400,13 @@ TEST_F(ListTest, RemoveAllTest){
     test_iter = list->head;
     test_ints_count = 0;
     while(test_iter){
-        EXPECT_EQ(*(int*)test_iter->item, test_ints_1[test_ints_count]);
+        EXPECT_EQ(*(int*)test_iter->item, test_values[test_ints_count]);
         test_iter = test_iter->next;
         test_ints_count++;
     }
 
     // Test 2 - Remove tail item
+    test_values = {2, -1, 5, 7, 0, 4, 5, 3};
     int tail_key = 1; // remove 1 value
     removed_items_count = list_remove_all(list, &tail_key, ListTest::Comparator);
     EXPECT_NE(list, nullptr);
@@ -417,12 +416,13 @@ TEST_F(ListTest, RemoveAllTest){
     test_iter = list->head;
     test_ints_count = 0;
     while(test_iter){
-        EXPECT_EQ(*(int*)test_iter->item, test_ints_2[test_ints_count]);
+        EXPECT_EQ(*(int*)test_iter->item, test_values[test_ints_count]);
         test_iter = test_iter->next;
         test_ints_count++;
     }
 
     // Test 3 - Remove middle item
+    test_values = {2, -1, 5, 7, 4, 5, 3};
     int middle_key = 0; // remove 0 value
     removed_items_count = list_remove_all(list, &middle_key, ListTest::Comparator);
     EXPECT_NE(list, nullptr);
@@ -432,7 +432,7 @@ TEST_F(ListTest, RemoveAllTest){
     test_iter = list->head;
     test_ints_count = 0;
     while(test_iter){
-        EXPECT_EQ(*(int*)test_iter->item, test_ints_3[test_ints_count]);
+        EXPECT_EQ(*(int*)test_iter->item, test_values[test_ints_count]);
         test_iter = test_iter->next;
         test_ints_count++;
     }
@@ -452,10 +452,11 @@ TEST_F(ListTest, RemoveAllTest){
     EXPECT_EQ(removed_items_count, 8);
     EXPECT_EQ(list->list_size, 5);
     // check each item value
+    test_values = {2, -1, 7, 4, 3};
     test_iter = list->head;
     test_ints_count = 0;
     while(test_iter){
-        EXPECT_EQ(*(int*)test_iter->item, test_ints_4[test_ints_count]);
+        EXPECT_EQ(*(int*)test_iter->item, test_values[test_ints_count]);
         test_iter = test_iter->next;
         test_ints_count++;
     }
@@ -470,7 +471,7 @@ TEST_F(ListTest, RemoveAllTest){
     test_iter = list->head;
     test_ints_count = 0;
     while(test_iter){
-        EXPECT_EQ(*(int*)test_iter->item, test_ints_4[test_ints_count]);
+        EXPECT_EQ(*(int*)test_iter->item, test_values[test_ints_count]);
         test_iter = test_iter->next;
         test_ints_count++;
     }
@@ -546,7 +547,7 @@ TEST_F(ListTest, AtTest) {
     for(int i = 0; i < 10; i++) {
         item = list_at(list, i);
         EXPECT_NE(item, nullptr);
-        EXPECT_EQ(*(int*)item, testValues[i]);
+        EXPECT_EQ(*(int*)item, test_data[i]);
         IsNotEmpty();
     }
 
@@ -681,7 +682,7 @@ TEST_F(ListTest, ContainsTest){
 TEST_F(ListTest, FilterTest){
     list_t *filtered;
     int v1 = 5, v2 = 170, v3 = 0, v4 = 3;
-    int filtered_values[5] = {9, 5, 7, 4, 5};
+    std::vector<int> filtered_values = {9, 5, 7, 4, 5};
 
     // if any argument is null: -1
     filtered = list_filter(nullptr, &v1, Predicate);
@@ -745,7 +746,7 @@ TEST_F(ListTest, FilterTest){
 
 TEST_F(ListTest, TrimFrontTest){
     int result;
-    int valid_values[7] = {5, 7, 0, 4, 5, 3, 1};
+    std::vector<int> test_values = {5, 7, 0, 4, 5, 3, 1};
 
     // if list is null
     result = list_trim_front(nullptr, 2); // -1
@@ -765,30 +766,27 @@ TEST_F(ListTest, TrimFrontTest){
     // if n gt list_size
     result = list_trim_front(list, 15); // -1
     EXPECT_EQ(result, -1);
-
+    
     // valid trim twice 
     result = list_trim_front(list, 3); // 3
     IsNotEmpty();
     EXPECT_EQ(result, 3);
     EXPECT_EQ(list->list_size, 7);
     for(int i = 0; i < 7; i++)
-        EXPECT_EQ(*(int*)list_at(list, i), valid_values[i]);
+        EXPECT_EQ(*(int*)list_at(list, i), test_values[i]);
     
     result = list_trim_front(list, 2); // 3
     IsNotEmpty();
     EXPECT_EQ(result, 2);
     EXPECT_EQ(list->list_size, 5);
     for(int i = 2; i < 7; i++)
-        EXPECT_EQ(*(int*)list_at(list, i - 2), valid_values[i]);
+        EXPECT_EQ(*(int*)list_at(list, i - 2), test_values[i]);
     
     Clear();
 }
 
 TEST_F(ListTest, TrimBackTest){
     int result;
-    int valid_values[7] = {9, 2, -1, 5, 7, 0, 4};
-    int count;
-    node_t* current_node;
     // if list is null
     result = list_trim_back(nullptr, 2); // -1
     EXPECT_EQ(result, -1);
@@ -808,34 +806,19 @@ TEST_F(ListTest, TrimBackTest){
     result = list_trim_back(list, 15); // -1
     EXPECT_EQ(result, -1);
 
-    // valid trim twice 
-    result = list_trim_back(list, 3); // 3
-    IsNotEmpty();
-    EXPECT_EQ(result, 3);
-    EXPECT_EQ(list->list_size, 7);
-
-    current_node = list->head;
-    count = 0;
-    while(current_node){
-        EXPECT_EQ(*(int*)current_node->item, valid_values[count]);
-        current_node = current_node->next;
-        count++;
-    }
-    EXPECT_EQ(count, 7);
-
-    result = list_trim_back(list, 2); // 3
-    IsNotEmpty();
-    EXPECT_EQ(result, 2);
-    EXPECT_EQ(list->list_size, 5);
+    // data = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1}
+    std::vector<std::tuple<int, int, int, std::vector<int>, int>> test_input = {  
+        {3, 3, 7, {9, 2, -1, 5, 7, 0, 4}, 7},       // valid trim twice 
+        {2, 2, 5, {9, 2, -1, 5, 7}, 5}              // valid trim twice 
+    };
     
-    current_node = list->head;
-    count = 0;
-    while(current_node){
-        EXPECT_EQ(*(int*)current_node->item, valid_values[count]);
-        current_node = current_node->next;
-        count++;
+    for(int i = 0; i < test_input.size(); i++) {
+        result = list_trim_back(list, std::get<0>(test_input[i])); // 3
+        IsNotEmpty();
+        EXPECT_EQ(result, std::get<1>(test_input[i]));
+        EXPECT_EQ(list->list_size, std::get<2>(test_input[i]));
+        EXPECT_EQ(TestData(std::get<3>(test_input[i])), std::get<4>(test_input[i]));
     }
-    EXPECT_EQ(count, 5);
 
     Clear();
 }
