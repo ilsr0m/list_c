@@ -9,10 +9,6 @@ extern "C"{
 class ListTest : public testing::Test {
 protected:
     list_t *list;
-
-    int testValues[10] = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1};
-    int testValuesSorted[10] = {-1, 0, 1, 2, 3, 4, 5, 5, 7, 9};
-
     std::vector<int> test_data = {9, 2, -1, 5, 7, 0, 4, 5, 3, 1};
 
     void SetUp() { 
@@ -155,7 +151,7 @@ TEST_F(ListTest, AppendMultipleTest) {
     node_t *list_iter = list->head;
     int value_index = 0;
     while(list_iter != nullptr){
-        EXPECT_EQ(*(int*)list_iter->item, testValues[value_index]);
+        EXPECT_EQ(*(int*)list_iter->item, test_data[value_index]);
         value_index++;
         list_iter = list_iter->next;
     }
@@ -181,7 +177,7 @@ TEST_F(ListTest, PrependMultipleTest){
     int value_index = 10;
     while(list_iter != nullptr){
         value_index--;
-        EXPECT_EQ(*(int*)list_iter->item, testValues[value_index]);
+        EXPECT_EQ(*(int*)list_iter->item, test_data[value_index]);
         list_iter = list_iter->next;
     }
 
@@ -197,42 +193,45 @@ TEST_F(ListTest, PrependMultipleTest){
 // function: list_insert
 TEST_F(ListTest, InsertTest){
     int result = 0; // return value of funtion 
-    // fill list with values to make it not empty
+
+    // check if list is null
+    int val = 4;
+    result = list_insert(nullptr, &val, 0);
+    EXPECT_EQ(result, -1); 
+
+    // check if index is out of range
     FillList(list_append);
+    result = list_insert(nullptr, &val, 11);
+    EXPECT_EQ(result, -1);
+    IsNotEmpty();
 
+    // <value, index>
     // insert as head item
-    int v0 = 1;
-    result = list_insert(list, &v0, 0);
-    EXPECT_EQ(result, 0); 
-    IsNotEmpty();
-    EXPECT_EQ(*(int*)list->head->item, v0); 
-    EXPECT_EQ(list->list_size, 11);
-    
-    // insert as last item
-    int v1 = 1;
-    result = list_insert(list, &v1, list->list_size);
-    EXPECT_EQ(result, 0); 
-    IsNotEmpty();
-    EXPECT_EQ(*(int*)list->tail->item, v1);
-    EXPECT_EQ(list->list_size, 12);
+    std::vector<std::tuple<int, int>> test_input = {
+        { 10, 0 }, { -3, 0 }, { -1 , 0 }, { 2   , 0  }, { 8, 0  },  // insert as head item  
+        { 30, 10}, { -3, 10}, { 140, 10}, { -228, 10 }, { 3, 10 },  // insert as last item
+        { 16, 1 }, { -9, 1 }, { -8 , 1 }, { 7   , 1  }, { 5, 1  },  // put it in the middle
+        { 16, 2 }, { -9, 2 }, { -8 , 2 }, { 7   , 2  }, { 5, 2  },  // put it in the middle
+        { 16, 3 }, { -9, 3 }, { -8 , 3 }, { 7   , 3  }, { 5, 3  },  // put it in the middle
+        { 16, 4 }, { -9, 4 }, { -8 , 4 }, { 7   , 4  }, { 5, 4  },  // put it in the middle
+        { 16, 5 }, { -9, 5 }, { -8 , 5 }, { 7   , 5  }, { 5, 5  },  // put it in the middle
+        { 16, 6 }, { -9, 6 }, { -8 , 6 }, { 7   , 6  }, { 5, 6  },  // put it in the middle
+        { 16, 7 }, { -9, 7 }, { -8 , 7 }, { 7   , 7  }, { 5, 7  },  // put it in the middle
+        { 16, 8 }, { -9, 8 }, { -8 , 8 }, { 7   , 8  }, { 5, 8  },  // put it in the middle
+        { 16, 9 }, { -9, 9 }, { -8 , 9 }, { 7   , 9  }, { 5, 9  },  // put it in the middle
+    };
 
-    // put it in the middle
-    int v3 = 8;
-    int position = 7;
-    result = list_insert(list, &v3, position);
-    EXPECT_EQ(result, 0); 
-    IsNotEmpty();
-    EXPECT_EQ(list->list_size, 13);
-
-    node_t *list_iter = list->head;
-    int count = 0;
-    while (list_iter != nullptr) {
-        if(position == count) break;
-        count++;
-        list_iter = list_iter->next;
+    for(int i = 0; i < test_input.size(); i++) {
+        FillList(list_append);
+        int test_value = std::get<0>(test_input[i]);
+        int position =  std::get<1>(test_input[i]);
+        result = list_insert(list, &test_value, position);
+        EXPECT_EQ(result, 0); 
+        IsNotEmpty();
+        EXPECT_EQ(*(int*)list_at(list, position), test_value); 
+        EXPECT_EQ(list->list_size, 11);
     }
-    EXPECT_EQ(*(int*)list_iter->item, v3);
-    
+
     Clear();
 }
 
@@ -241,17 +240,24 @@ TEST_F(ListTest, FrontTest) {
     void* result; // return value of funtion 
     int v1 = 3, v2 = 0;
 
+    // nullptr
+    result = list_front(nullptr);
+    EXPECT_EQ(result, nullptr);
+    
+    // empty list
     result = list_front(list);
     EXPECT_EQ(result, nullptr);
 
     list_prepend(list, &v1);
     result = list_front(list);
     EXPECT_EQ(*(int*)result, v1);
+    IsNotEmpty();
 
     list_prepend(list, &v2);
     result = list_front(list);
     EXPECT_EQ(*(int*)result, v2);
-    
+    IsNotEmpty();
+
     Clear();
 }
 
@@ -541,7 +547,6 @@ TEST_F(ListTest, AtTest) {
 
     // prepare values
     FillList(list_append);
-
     // try to get value by valid index
     // scan all values
     for(int i = 0; i < 10; i++) {
