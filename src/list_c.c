@@ -150,15 +150,15 @@ int list_insert(list_t *list, const void *item, const size_t pos) {
 	return -1;
 }
 
-void* list_front(list_t* list) {
+void* list_front(list_t *list) {
 	return (!list || list->list_size == 0) ? NULL : list->head->item;
 }
 
-void* list_back(list_t* list) {
+void* list_back(list_t *list) {
 	return (!list || list->list_size == 0) ? NULL : list->tail->item;
 }
 
-void* list_remove(list_t* list, void* key, cmp_func_t comparator) {
+void* list_remove(list_t *list, void *key, cmp_func_t comparator) {
 	if(!list || !key || !comparator) return NULL;
 
 	node_t* current_node = list->head;
@@ -195,7 +195,7 @@ void* list_remove(list_t* list, void* key, cmp_func_t comparator) {
 	return NULL;
 }
 
-int list_remove_all(list_t* list, void* key, cmp_func_t comparator) {
+int list_remove_all(list_t *list, void *key, cmp_func_t comparator) {
 	if(!list || !key || !comparator) return -1;
 
 	int removed_items_count = 0;
@@ -455,3 +455,8 @@ int list_trim_range(list_t *list, const size_t start, const size_t end) {
 	list->list_size -= (end - start);
 	return end - start;
 }
+
+size_t list_size(const list_t *lst) {
+	return (!lst) ? 0 : lst->list_size;
+}
+

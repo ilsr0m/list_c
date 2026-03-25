@@ -150,7 +150,7 @@ list_t *list_copy(const list_t *list);
  * @return Результат поиска: 0 - найден, 1 - не найден.
  * Если list - NULL или item == 0, то функция вернет -1
  */
-int list_contains(const list_t* list, const void* key, cmp_func_t comparator);
+int list_contains(const list_t *list, const void *key, cmp_func_t comparator);
 
 /**
  * @brief Формирование нового односвязного линейного списка на основе старого с фильрацией данных по предикату
@@ -159,7 +159,7 @@ int list_contains(const list_t* list, const void* key, cmp_func_t comparator);
  * @param[in] context Указатель на контекст предиката. Т. е. с чем сранвивать данные узла. Передается потом в качестве аргумента в предикат
  * @return Указатель на новый односвязный линейный список. Если list - NULL, то функция вернет NULL
  */
-list_t* list_filter(const list_t* list, void* context, predicate_fn predicate);
+list_t* list_filter(const list_t *list, void *context, predicate_fn predicate);
 
 /**
  * @brief Функция удаления n-го количества элементов с начала односвязного линейного списка
@@ -185,5 +185,12 @@ int list_trim_back(list_t *list, const size_t n); // +
  * @return Количество удаленных элементов
  */
 int list_trim_range(list_t *list, const size_t start, const size_t end);
+
+/**
+ * @brief Функция возвращает размер списка - количество элементов в односвязном списке
+ * @param[in] lst Указатель на список
+ * @return Количество элементов списка
+ */
+size_t list_size(const list_t *lst);
 
 #endif
