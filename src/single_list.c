@@ -589,7 +589,7 @@ int slist_is_sorted(slist_t *lst, comparator_fn comparator) {
 	if(lst->list_size == 0) return -1;
 	snode_t * current = lst->head;
 	while (current && current->next) {
-		if(cmp(current->item, current->next->item) > 0)
+		if(comparator(current->item, current->next->item) > 0)
 			return -1;
 		current = current->next;
 	}

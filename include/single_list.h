@@ -35,7 +35,7 @@ typedef  int (*comparator_fn)(const void *item, const void *key);
 * @return Non-zero if condition is true.
 * @return Zero otherwise.
 */
-typedef int (*predicate_fn)(const void* item, void* context);
+typedef int (*predicate_fn)(const void* item, const void* context);
 
 /**
 * @brief Creates list.
