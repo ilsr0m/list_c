@@ -206,6 +206,7 @@ void* slist_at(const slist_t *lst, const size_t index) {
 
 int slist_remove(slist_t *lst, const void *key, comparator_fn comparator) {
 	if(!lst || !key || !comparator) return -1;
+	if(lst->list_size == 0) return -1;
 
 	struct SingleNode *current_node = lst->head;
 	struct SingleNode *previous_node = NULL, *next_node = NULL;
@@ -239,7 +240,7 @@ int slist_remove(slist_t *lst, const void *key, comparator_fn comparator) {
 
 int slist_remove_at(slist_t *lst, const size_t position){
 	if(!lst || position >= lst->list_size) return -1;
-
+	
 	int count = 0;
 	struct SingleNode *current_node = lst->head;
 	struct SingleNode *previous_node = NULL, *next_node = NULL;
@@ -274,7 +275,8 @@ int slist_remove_at(slist_t *lst, const size_t position){
 
 int slist_remove_all(slist_t *lst, const void *key, comparator_fn comparator) {
 	if(!lst || !key || !comparator) return -1;
-
+	if(lst->list_size == 0) return -1;
+	
 	int removed_items_count = 0;
 	struct SingleNode *current_node = lst->head;
 	struct SingleNode *previous_node, *next_node;

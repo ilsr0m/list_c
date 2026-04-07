@@ -7,7 +7,14 @@
 #include <string.h>
 #include <time.h>
 
+/**
+ * @brief Opaque singly-linked list
+ */
 typedef struct SingleNode snode_t;
+
+/**
+ * @brief Opaque node type
+ */
 typedef struct SingleList slist_t;
 
 /**
