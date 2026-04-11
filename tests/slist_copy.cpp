@@ -8,7 +8,7 @@ TEST_P(CopyNull, CopyTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(TrimeRangeNullSuite, CopyNull, ::testing::Values(
-    nullptr, slist_create(0)
+    static_cast<slist_t*>(nullptr), slist_create(0)
 ));
 
 TEST_P(CopyFull, CopyTest) {

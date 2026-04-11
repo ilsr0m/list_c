@@ -8,9 +8,9 @@ TEST_P(BogosortNull, BogosortTest) {
 }
 
 INSTANTIATE_TEST_SUITE_P(BogosortNullSuite, BogosortNull, ::testing::Values(
-    std::make_tuple(nullptr, nullptr),
-    std::make_tuple(nullptr, &test_utils::ascending),
-    std::make_tuple(slist_create(sizeof(int)), nullptr)
+    std::make_tuple(static_cast<slist_t*>(nullptr), static_cast<comparator_fn>(nullptr)),
+    std::make_tuple(static_cast<slist_t*>(nullptr), &test_utils::ascending),
+    std::make_tuple(slist_create(sizeof(int)), static_cast<comparator_fn>(nullptr))
 ));
 
 TEST_P(BogosortFull, BogosortTest) {

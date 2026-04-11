@@ -210,4 +210,14 @@ using SortFull = ::testing::TestWithParam<SortFullParam>;
 using BogosortNull = SortNull;
 using BogosortFull = SortFull;
 
+// -------------------------------------------------
+// slist_front_item
+// -------------------------------------------------
+using FrontItemNull = ::testing::TestWithParam<slist_t*>;
+using FrontItemFull = ::testing::TestWithParam<std::tuple<vec_t, int>>;
 
+// -------------------------------------------------
+// slist_back_item
+// -------------------------------------------------
+using BackItemNull = FrontItemNull;
+using BackItemFull = FrontItemFull;
