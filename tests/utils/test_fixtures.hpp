@@ -13,6 +13,11 @@ extern "C" {
 using vec_t = std::vector<int>;
 
 // -------------------------------------------------
+// slist_clear
+// -------------------------------------------------
+using ClearFull = ::testing::TestWithParam<slist_t*>;
+
+// -------------------------------------------------
 // slist_append
 // -------------------------------------------------
 using AppendNull = ::testing::TestWithParam<std::tuple<slist_t *, std::optional<int>>>;

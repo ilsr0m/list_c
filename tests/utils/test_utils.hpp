@@ -13,9 +13,10 @@ namespace test_utils {
 
     void tearDown(slist_t * lst);
     void tearDown(std::vector<slist_t *> lists);
-    void testEmpty(slist_t *li);
-    void testNotEmpty(slist_t *li);
 
+    void testEmpty(slist_t *li);
+    void testNotEmpty(slist_t *li); 
+    
     template <typename Container>
     void compareWith(slist_t * lst, Container& container, bool reverse=false) {
         using Type = typename Container::value_type;
@@ -30,26 +31,26 @@ namespace test_utils {
 
         if(reverse) {
             // Head must be equal to the last vector's item
-            EXPECT_EQ(*(int*)snode_data(slist_head(lst)), container[container.size() - 1]);
+            EXPECT_EQ(*(Type*)snode_data(slist_head(lst)), container[container.size() - 1]);
             // Tail must be equal to the first vector's item
-            EXPECT_EQ(*(int*)snode_data(slist_tail(lst)), container[0]);
+            EXPECT_EQ(*(Type*)snode_data(slist_tail(lst)), container[0]);
             for (auto it = container.rbegin(); it != container.rend(); ++it) {
-                EXPECT_EQ(*(int*)snode_data(current), *it);
+                EXPECT_EQ(*(Type*)snode_data(current), *it);
                 current = snode_next(current);
             }
         }
         else{
-            EXPECT_EQ(*(int*)snode_data(slist_head(lst)), container[0]); // Head must be equal to the first vector's item
-            EXPECT_EQ(*(int*)snode_data(slist_tail(lst)), container[container.size() - 1]); // Tail must be equal to the last vector's item
+            EXPECT_EQ(*(Type*)snode_data(slist_head(lst)), container[0]); // Head must be equal to the first vector's item
+            EXPECT_EQ(*(Type*)snode_data(slist_tail(lst)), container[container.size() - 1]); // Tail must be equal to the last vector's item
             for(auto v : container) {
-                EXPECT_EQ(*(int*)snode_data(current), v);
+                EXPECT_EQ(*(Type*)snode_data(current), v);
                 current = snode_next(current);
             }
         }
     }
 
-    template <typename T>
-    const void* toVoidPtr(const T& value) { return &value; }
+    // template <typename T>
+    // const void* toVoidPtr(const T& value) { return &value; }
 
     template <typename Container>
     slist_t *toSlist(const Container& container) {

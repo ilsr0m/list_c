@@ -1,7 +1,7 @@
 #include "test_utils.hpp"
 
 namespace test_utils {
-    
+
     void tearDown(slist_t * lst) {
         slist_delete(&lst);
         EXPECT_EQ(lst, nullptr);

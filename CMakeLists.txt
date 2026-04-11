@@ -22,6 +22,7 @@ find_package(GTest REQUIRED) # llok for gtest (and gtest_main)
 
 add_executable(slist_test
     tests/test_utils.cpp
+    tests/slist_clear.cpp
     tests/slist_append.cpp
     tests/slist_prepend.cpp
     tests/slist_insert.cpp
